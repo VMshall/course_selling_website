@@ -2,6 +2,8 @@ const { Router } = require("express");
 const Module = require("node:module");
 const adminRouter = Router();
 
+const {adminModel} = require("../db");
+
 
 adminRouter.post("./signin", function(req, res) {
 
@@ -35,6 +37,6 @@ adminRouter.get("./course/bulk", function(req,res){
     })
 })
 
-Module.exports = {
+module.exports = {
     adminRouter: adminRouter
 }

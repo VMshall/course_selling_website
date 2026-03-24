@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
-mongoose.connect ("")
+console.log("youre in")
+mongoose.connect("mongodb://admin:password@localhost:27017/test?authSource=admin")
 const Schema = mongoose.Schema;
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -12,7 +13,7 @@ const userSchema = Schema({
 
 
 const adminSchema = Schema ({
-    email: {type: string, unique: true},
+    email: {type: String, unique: true},
     password: String,
     FirstName: String,
     LastName: String
