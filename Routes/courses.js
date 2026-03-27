@@ -1,21 +1,7 @@
 const { Router } = require("express");
 const { purchaseModel, courseModel } = require("../db");
 const courseRouter = Router();
-
-courseRouter.post("/signup", function(req, res){
-    res.json({
-        message: "you're ready to signup "
-    })
-
-});
-
-courseRouter.post("/signin", function(req, res){
-
-    res.json({
-        message: "You're ready to signin"
-    })
-
-});
+const { userMiddleware } = require("../middleware/user"); // Added userMiddleware import
 
 courseRouter.post("/courses", function(req, res){
 
@@ -25,19 +11,22 @@ courseRouter.post("/courses", function(req, res){
 });
 
 
-courseRouter.port("/purchase", userMiddleware , async function(req, res){
+courseRouter.post("/purchase", userMiddleware , async function(req, res){
+    try { // Added try-catch for error handling
+        const userId = req.userId;
+        const courseId = req.body.courseId;
 
-    const userId = req.userId;
-    const courseId = req.body.courseId;
+        await purchaseModel.create ({
+            userId,
+            courseId
+        })
 
-    await purchaseModel.create ({
-        userId,
-        courseId
-    })
-
-    res.json ({
-        message: "you've successfully bought the course"
-    })
+        res.json ({
+            message: "you've successfully bought the course"
+        })
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error" });
+    }
 })
 
 courseRouter.put("/courses", function(req, res){
@@ -48,14 +37,17 @@ courseRouter.put("/courses", function(req, res){
 });
 
 courseRouter.get("/preview",async  function(req, res){
+    try { // Added try-catch for error handling
+        const courses = await courseModel.find({});
 
-    const courses = await courseModel.find({});
 
+        res.json({
+            courses
+        })
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error" });
+    }
 
-    res.json({
-        courses
-    })
-    
 });
 
 

@@ -18,10 +18,12 @@ app.use("/admin", adminRouter);
 
 async function main(){
     await mongoose.connect(process.env.MONGO_URL).then(() => {
-    console.log("DB connected");
-});
-app.listen( 3000  );
-console.log("connected")
+        console.log("DB connected");
+        app.listen( 3000  );
+        console.log("connected");
+    }).catch((err) => {
+        console.log("DB connection failed", err);
+    });
 }
 
 main()

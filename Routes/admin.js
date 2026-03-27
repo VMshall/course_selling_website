@@ -3,105 +3,128 @@ const adminRouter = Router();
 const { adminModel, courseModel } = require("../db");
 const jwt = require("jsonwebtoken");
 const {JWT_Admin_SECRET } = require("../config");
-const courses = require("./courses");
-// const admin = require("../Routes/admin");
+// const courses = require("./courses"); // Removed unused import
 const { adminMiddleware } = require("../middleware/admin")
 
 
 adminRouter.post("/signup", async function(req ,res) {
+    try { // Added try-catch for error handling
+        const { email, password , FirstName, LastName } = req.body;
 
-    const { email, password , FirstName, LastName } = req.body;
-    await adminModel.create ({
-        email: email,
-        password: password,
-        FirstName: FirstName,
-        LastName: LastName
-    })
+        // TODO: Hash password before storing (use bcrypt)
+        // const hashedPassword = await bcrypt.hash(password, 10);
 
-    res.json({
-        message: "admin signup"
-    })
+        await adminModel.create ({
+            email: email,
+            password: password, // Replace with hashedPassword
+            FirstName: FirstName,
+            LastName: LastName
+        })
+
+        res.json({
+            message: "admin signup"
+        })
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error" });
+    }
 })
 
-adminRouter.get("/signin", async function(req , res){
-    const { email, password } = req.body;
+adminRouter.post("/signin", async function(req , res){
+    try { // Added try-catch for error handling
+        const { email, password } = req.body;
 
-    const admin = await adminModel.findOne ({
-        email: email,
-        password: password
-});
+        const admin = await adminModel.findOne ({
+            email: email,
+            password: password
+    });
 
-    if (admin) {
-        const token = jwt.sign({
-            id: admin._id,
-        }, JWT_Admin_SECRET)
+        if (admin) {
+            const token = jwt.sign({
+                id: admin._id,
+            }, JWT_Admin_SECRET)
 
-    
-    res.json({
-        message: "admin signin"
-    })
-
-    } else {
-        res.status(403).json({
-            message: "invalid credentials"
+        
+        res.json({
+            message: "admin signin",
+            token: token
         })
+
+        } else {
+            res.status(403).json({
+                message: "invalid credentials"
+            })
+        }
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error" });
     }
 });
 
 
-adminRouter.post("/course", async function(req, res){
-    const adminId = req.userId;
+adminRouter.post("/course", adminMiddleware, async function(req, res){
+    try { // Added try-catch for error handling
+        const adminId = req.userId;
 
-    const { title , description , imageUrl, CreatorId, price } = req.body;
+        const { title , description , imageUrl, CreatorId, price } = req.body;
 
-    const Course = await courseModel.create({
-        title: title,
-        imageUrl: imageUrl,
-        price: price,
-        creatorid: adminId,
-        description: description
+        const Course = await courseModel.create({
+            title: title,
+            imageUrl: imageUrl,
+            price: price,
+            creatorId: adminId,
+            description: description
 
-    })
+        })
 
-    res.json ({
-        message: "Course Created",
-        courseId: Course._id
-    })
+        res.json ({
+            message: "Course Created",
+            courseId: Course._id
+        })
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error" });
+    }
 
 });
 
-adminRouter.get("/course/bulk", async function(req, res){
-    const adminId= req.userId;
+adminRouter.get("/course/bulk", adminMiddleware, async function(req, res){
+    try { // Added try-catch for error handling
+        const adminId= req.userId;
 
-    const course = await courseModel.find({
-        creatorId: adminId
-    });
+        const course = await courseModel.find({
+            creatorId: adminId
+        });
 
-    res.json({
-        message: "Course updated",
-        courses
-    })
+        res.json({
+            message: "Courses fetched",
+            course: course
+        })
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error" });
+    }
 })
 
 adminRouter.put("/course",adminMiddleware , async function(req, res){
-    const adminId = req.userId;
+    try { // Added try-catch for error handling
+        const adminId = req.userId;
 
-    const {title , description , price, imageUrl, courseId } = req.body;
+        const {title , description , price, imageUrl, courseId } = req.body;
 
-    const course = await courseModel.updateOne({
-        _id: courseId,
-        creatorId: adminId
-    
-    }, {
-        title: title,
-        description: description,
-        imageUrl: imageUrl,
-        price: price
-    })    
-    res.json({
-        message: "Course Updated",
-        courseId: course._id
-    })
+        const course = await courseModel.updateOne({
+            _id: courseId,
+            creatorId: adminId
+        
+        }, {
+            title: title,
+            description: description,
+            imageUrl: imageUrl,
+            price: price
+        })    
+        res.json({
+            message: "Course Updated",
+            courseId: course._id
+        })
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error" });
+    }
 });
 
 module.exports = {
