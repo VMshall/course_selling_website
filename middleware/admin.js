@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const {JWT_Admin_SECRET } = require ("../config");
-const admin = require("../Routes/admin");
+// const admin = require("../Routes/admin");
 
 
 

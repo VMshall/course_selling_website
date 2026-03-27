@@ -3,6 +3,10 @@ const adminRouter = Router();
 const { adminModel, courseModel } = require("../db");
 const jwt = require("jsonwebtoken");
 const {JWT_Admin_SECRET } = require("../config");
+const courses = require("./courses");
+// const admin = require("../Routes/admin");
+const { adminMiddleware } = require("../middleware/admin")
+
 
 adminRouter.post("/signup", async function(req ,res) {
 
@@ -27,7 +31,7 @@ adminRouter.get("/signin", async function(req , res){
         password: password
 });
 
-    if (user) {
+    if (admin) {
         const token = jwt.sign({
             id: admin._id,
         }, JWT_Admin_SECRET)
@@ -44,20 +48,8 @@ adminRouter.get("/signin", async function(req , res){
     }
 });
 
-adminRouter.post("/purchase", function(req, res){
-     const courseId = req.courseId
 
-     const {userId , CreatorId , CourseId} = req.body;
-
-     const purchase = await purchaseModel.findOne {
-
-        userId: ......,
-        CreatorId : adminId,
-        courseId: courseId
-     }
-});
-
-adminRouter.get("/courses", async function(req, res){
+adminRouter.post("/course", async function(req, res){
     const adminId = req.userId;
 
     const { title , description , imageUrl, CreatorId, price } = req.body;
@@ -73,11 +65,44 @@ adminRouter.get("/courses", async function(req, res){
 
     res.json ({
         message: "Course Created",
-        courseId: course._id
+        courseId: Course._id
     })
 
 });
 
+adminRouter.get("/course/bulk", async function(req, res){
+    const adminId= req.userId;
+
+    const course = await courseModel.find({
+        creatorId: adminId
+    });
+
+    res.json({
+        message: "Course updated",
+        courses
+    })
+})
+
+adminRouter.put("/course",adminMiddleware , async function(req, res){
+    const adminId = req.userId;
+
+    const {title , description , price, imageUrl, courseId } = req.body;
+
+    const course = await courseModel.updateOne({
+        _id: courseId,
+        creatorId: adminId
+    
+    }, {
+        title: title,
+        description: description,
+        imageUrl: imageUrl,
+        price: price
+    })    
+    res.json({
+        message: "Course Updated",
+        courseId: course._id
+    })
+});
 
 module.exports = {
     adminRouter: adminRouter

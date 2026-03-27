@@ -2,7 +2,7 @@
 // const Router = express.Router;     either use the below line or the above 2 , both do the same work 
 
 const { Router } = require("express");
-const {userModel} = require("../db");
+const {userModel, purchaseModel} = require("../db");
 const userRouter = Router();
 const jwt = require("jsonwebtoken");
 const { JWT_USER_SECRET } = require ("../config");
@@ -52,11 +52,30 @@ userRouter.post("/signup", async function(req, res){
     })
 });
 
-userRouter.get("/purchases", function(req, res){
+
+// to view their purchasses
+userRouter.get("/purchases", async function(req, res){
+    const userId = req.userId;
+
+    const purchases = await purchaseModel.find({
+        userId
+    });
+
+    let purchasedCourseIds = [];
+
+    for ( let i=0 , i< purchases[i].length; i++ ){
+        purchasedCourseIds.push(purchases[i].courseId)
+    }
+
+    const coursesData = await courseModel.find({
+        _id: { $in: purchasedCourseIds }
+    })
+    
 
         res.json({
-        message: "you're ready to purchase from user.js"
-    })
+            purchases,
+            courseData
+        })
 });
 
 module.exports = {
